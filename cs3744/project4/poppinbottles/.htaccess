@@ -1,0 +1,27 @@
+Options -Indexes
+Require all granted
+
+RewriteEngine on
+
+# ErrorDocument 404 /app/controller/error.php
+
+# Site
+RewriteRule ^$ app/controller/siteController.php?action=home [QSA,L]
+RewriteRule ^browse/?$ app/controller/siteController.php?action=browse [QSA,L]
+RewriteRule ^aboutUs/?$ app/controller/siteController.php?action=aboutUs [QSA,L]
+RewriteRule ^processLogin/?$ app/controller/siteController.php?action=processLogin [QSA,L]
+RewriteRule ^processLogout/?$ app/controller/siteController.php?action=processLogout [QSA,L]
+RewriteRule ^processNewsLetter/?$ app/controller/siteController.php?action=processNewsLetter [QSA,L]
+RewriteRule ^login/?$ app/controller/siteController.php?action=home [QSA,L]
+RewriteRule ^locations/?$ app/controller/siteController.php?action=locations [QSA,L]
+RewriteRule ^search/?$ app/controller/siteController.php?action=search [QSA,L]
+
+# Product
+RewriteRule ^products/view/(\d+)/?$ app/controller/productController.php?action=viewProduct&pid=$1 [QSA,L]
+RewriteRule ^products/addItem/?$ app/controller/productController.php?action=addItem [QSA,L]
+RewriteRule ^products/processEditDel/(\d+)/?$ app/controller/productController.php?action=processEditDel&pid=$1 [QSA,L]
+RewriteRule ^addItem/?$ app/controller/productController.php?action=addItem [QSA,L]
+RewriteRule ^products/edit/(\d+)/process/?$ app/controller/productController.php?action=editProductProcess&pid=$1 [QSA,L]
+RewriteRule ^products/addItem/process app/controller/productController.php?action=addItemProcess&pid=$1 [QSA,L]
+RewriteRule ^products/updateCart/ app/controller/productController.php?action=addToCart [QSA,L]
+RewriteRule ^products/updatePostCart/?$ app/controller/productController.php?action=postCart [QSA,L]
