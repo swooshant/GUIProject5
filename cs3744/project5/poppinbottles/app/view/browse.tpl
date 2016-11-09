@@ -132,7 +132,7 @@
 						<button class="submit" type="button" id = "updateCart" value="cartPressed" onclick="postToSession(<?=$row['id']?>)"> Add to Cart</button>
 						<p class="shortdesc"><?= $row['ShortDesc'] ?></p>
 						<p class="price"><?= $row['Price'] ?></p>
-						<?php if(isset($_SESSION['adminLogin'])): ?>
+						<?php if(isset($_SESSION['admin'])): ?>
 							<button class="submit" name="edit" value="editPressed" >Edit</button>
 							<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
 

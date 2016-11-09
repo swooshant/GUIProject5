@@ -40,6 +40,15 @@ class SiteController {
 			case 'search': 
 				$this->searchPage();
 			break;
+			case 'createAccount': 
+				$this->createAccountPage();
+			break;
+			case 'processNewUser': 
+				$this->processNewUser();
+			break;
+			case 'profilePage': 
+				$this->profilePage();
+			break;
 				// Defaults to homepage url
       		default:
         			header('Location: '.BASE_URL);
@@ -98,28 +107,39 @@ class SiteController {
   	//gets admin data (id 1) and checks against it to let a login happen
 	public function processLogin($u, $p) {
 		$pageName = 'processLogin';
+		$user = User::loadByUsername($u);
 
-		$userObj = new User();
-        $adminObj = $userObj -> loadById(1);
+		session_start();
 
-		$adminUsername = $adminObj->getUsername();
-		$adminPassword = $adminObj->getPassword();
-
-		if(($u == $adminUsername) && ($p == $adminPassword)) {
-			session_start();
-			$_SESSION['adminLogin'] = $u;
+		if($user == null) 
+		{
+			$_SESSION['msg'] = 'Incorrect username or password.';
 			header('Location: '.BASE_URL);
 			exit();
 		}
-		header('Location: '.BASE_URL);
-
+		else if ($user->get('pw') != $p)
+		{
+			$_SESSION['msg'] = 'Incorrect username or password.';
+			header('Location: '.BASE_URL);
+			exit();
+		}
+		else
+		{
+			$_SESSION['username'] = $user->get('username');
+			$_SESSION['userID'] = $user->get('id');
+			$_SESSION['admin'] = $user->get('is_admin');
+			$_SESSION['elite'] = $user->get('is_elite');
+			
+			$_SESSION['msg'] = 'Logged In As: '.$user->get('username');
+			header('Location: '.BASE_URL);
+			exit();
+		}
 	}
-
 
 	//just destroys the admin login
 	public function processLogout() {
 		session_start(); 
-		if(isset($_SESSION['adminLogin'])){
+		if(isset($_SESSION['userID'])){
 			session_destroy();
 			header('Location: '.BASE_URL);
 		}
@@ -136,7 +156,6 @@ class SiteController {
 		header('Location: '.BASE_URL);
 
 	}
-
 	
 	// function to geocode address, it will return false if unable to geocode address
 	function geocode($address) {
@@ -193,12 +212,43 @@ class SiteController {
 		include_once SYSTEM_PATH.'/view/search.tpl';
 		include_once SYSTEM_PATH.'/view/footer.tpl';
 	}
+
+	//Loads the templates for the new user page
+	public function createAccountPage(){
+		include_once SYSTEM_PATH.'/view/header.tpl';
+		include_once SYSTEM_PATH.'/view/createAccount.tpl';
+		include_once SYSTEM_PATH.'/view/footer.tpl';
+	}
+	
+	//TODO
+	//Add data validation (check for empty fields, duplicate usernames/emails)
+	public function processNewUser() {
+		$user = new User();
+		
+		$username = $_POST['username'];
+		$password = $_POST['password'];
+
+		$user->set('first_name', $_POST['firstname']);
+		$user->set('last_name', $_POST['lastname']);
+		$user->set('email', $_POST['email']);
+		$user->set('username', $username);
+		$user->set('pw', $password);
+
+		if ($_POST(['userType'] == "elite")) {
+			$user->set('is_elite', 1);
+		}
+
+		$user -> save();
+		processLogin($username, $password);
+		header('Location: '.BASE_URL);
+	}
+
+	public function profilePage() {
+		$pageName = 'profilePage';		
+		$userID = $_SESSION['userID'];
+
+		include_once SYSTEM_PATH.'/view/header.tpl';
+		include_once SYSTEM_PATH.'/view/profilePage.tpl';
+		include_once SYSTEM_PATH.'/view/footer.tpl';
+	}
 }
-
-
-
-
-
-
-
-

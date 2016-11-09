@@ -1,19 +1,19 @@
 <h1><a class="back" href="<?= BASE_URL ?>/browse/"> <<< back </a></h1>
 	<div id="prodcontent-left">
-			<form  action="<?= BASE_URL ?>/products/processEditDel/<?= $product['id'] ?>" method="POST" >
-				<img src="<?= BASE_URL ?>/public/img/<?= $product['Img_Url'] ?>" alt="Wine product chosen">
+			<form  action="<?= BASE_URL ?>/products/processEditDel/<?= $product->get('id') ?>" method="POST" >
+				<img src="<?= BASE_URL ?>/public/img/<?= $product->get('Img_Url') ?>" alt="Wine product chosen">
 				<br>
-				<?php if(isset($_SESSION['adminLogin'])): ?>
+				<?php if(isset($_SESSION['admin'])): ?>
 						  		<button class="submit" name="edit" value="editPressed" >Edit</button>
 						  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
 				<?php endif; ?>
-				<h2><?= $product['WineTitle'] ?></h2>
+				<h2><?= $product->get('WineTitle') ?></h2>
 				<!-- reviews from Trip ADvisor!! -->
 				<!-- ALL Descriptions are from TotalWine.com -->
-				<h4> <?= $product['ShortDesc'] ?> </h4>
-				<h3 class="price">Price: <?= $product['Price'] ?></h3>
+				<h4> <?= $product->get('ShortDesc') ?> </h4>
+				<h3 class="price">Price: <?= $product->get('Price') ?></h3>
 				<p class="pdescriptions">
-					<?= $product['LongDesc'] ?>
+					<?= $product->get('LongDesc') ?>
 				</p>
 			</form>
 		</div>
@@ -21,7 +21,7 @@
 			
 			<div class="dropdown" id="size">
 				<h3>Sizes:</h3>
-				<?= $product['Volumes'] ?>
+				<?= $product->get('Volumes') ?>
 				<br>
 				<h3>Quantity:</h3> 
 				<select name="Quantity">
@@ -36,12 +36,12 @@
 			</div>
 
 			<button class="submit">Add to Cart</button>
-			<h3> Rating: <?= $product['Rating'] ?>/5.0 </h3>
+			<h3> Rating: <?= $product->get('Rating') ?>/5.0 </h3>
 
 			<div id="revieWrapper">
 				<div class="reviews">
 					<h4 class="reviewHeader">
-						User123: Rating: *****: <?= $product['Date_Created'] ?>
+						User123: Rating: *****: <?= $product->get('Date_Created') ?>
 					</h4>
 					<p class="reviewParagraph">
 								<!-- reviews from Trip ADvisor!! -->
@@ -52,7 +52,7 @@
 				</div>	
 				<div class="reviews">
 					<h4 class="reviewHeader">
-						User999: Rating: ****: <?= $product['Date_Created'] ?>
+						User999: Rating: ****: <?= $product->get('Date_Created') ?>
 					</h4>
 					<p class="reviewParagraph">
 								<!-- reviews from Trip ADvisor!! -->

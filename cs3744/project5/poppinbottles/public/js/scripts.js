@@ -11,28 +11,11 @@ $(document).ready(function(){
 				$('#picMes').css('font-style', 'italic');
 				flag = false;
 			}
-			$('#vineImag').attr("src","/GUIProject4/cs3744/project4/poppinbottles/public/img/" + ImNum);
+			$('#vineImag').attr("src","/GUIProject5/cs3744/project5/poppinbottles/public/img/" + ImNum);
 			$('#vineImag').fadeIn(350);
 		});
 		return false;
 	}
-
-	//event trigger for the search bar being empty
-	$('#search .submit').click(function(){
-		var value = $('#search .inputForm').val();
-		if (value == '') {
-			$('#search .inputForm').css('background-color', 'red');
-			$(this).css('color', 'red');
-			return false;	
-		}
-		else{
-			$('#search .inputForm').css('background-color', 'white');
-			$(this).css('color', 'white');	
-			$("input.gsc-input").attr("value", value);
-			return true;
-
-		}
-	});
 
 		//event trigger for the login bar being empty
 		//changes everything to red until both fields are filled
@@ -106,6 +89,35 @@ $(document).ready(function(){
 		return;
 	});
 
+	//event trigger for the search bar being empty
+	$('#createAccount .submit').click(function(){
+		var firstname = document.getElementsByName("accountfirstname")[0].value;
+		var lastname = document.getElementsByName("accountlastname")[0].value;
+		var email = document.getElementsByName("accountemail")[0].value;
+		var username = document.getElementsByName("accountusername")[0].value;
+		var password = document.getElementsByName("accountpassword")[0].value;
 
+		if (firstname == '' || lastname == '' || email == '' || username == '' || password == '') {
+			$('#createAccount .inputForm').css('background-color', 'red');
+			$(this).css('color', 'red');
+
+			if ( !$('#warning2').length ) {
+				$("#createAccount").prepend("<h1 id='warning2'>Empty Field(s)!</h1>");
+				$("#warning2").css("color", "red");
+				$("#warning2").css("margin-right", "5px");
+				$("#warning2").css("font-size", "16pt");
+			}
+			return false;	
+		}
+		else{
+			$('#createAccount .inputForm').css('background-color', 'white');
+			$('#createAccount .inputForm').css('color', 'white');	
+			$("input.gsc-input").attr("value", value);	
+			if ( $('#warning2').length ) {
+				$("#warning2").remove();
+			}
+			return true;
+		}
+	});
 
 });

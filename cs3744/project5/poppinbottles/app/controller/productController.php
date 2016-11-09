@@ -69,20 +69,7 @@ class ProductController {
 	public function viewProduct($id) {
 		$pageName = 'Product';
 	
-		$productClass = new Product();
-		$viewingProduct = $productClass->loadById($id);
-		
-		$product = array();
-		
-		$product['id'] = $id;
-		$product['WineTitle'] = $viewingProduct->get('WineTitle');
-		$product['ShortDesc'] = $viewingProduct->get('ShortDesc');
-		$product['LongDesc'] = $viewingProduct->get('LongDesc');
-		$product['Volumes'] = $viewingProduct->get('Volumes');
-		$product['Price'] = $viewingProduct->get('Price');
-		$product['Rating'] = $viewingProduct->get('Rating');
-		$product['Date_Created'] = $viewingProduct->get('Date_Created');
-		$product['Img_Url'] = $viewingProduct->get('Img_Url');
+		$product = Product::loadById($id);
 
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/product.tpl';
@@ -119,7 +106,8 @@ class ProductController {
 
 	//the process for adding an item to the database
 	public function addItemProcess(){
-		 $newProduct = new Product();
+		$newProduct = new Product();
+		$creator_id = $_SESSION['userID'];
 
 		$newProduct->set('WineTitle', $_POST['WineTitle']);
 		$newProduct->set('ShortDesc', $_POST['ShortDesc']);
@@ -128,7 +116,7 @@ class ProductController {
 		$newProduct->set('Price', $_POST['Price']);
 		$newProduct->set('Rating', $_POST['Rating']);
 		$newProduct->set('Img_Url', $_POST['Img_Url']);
-		$newProduct->set('Creator_Id', 1);
+		$newProduct->set('Creator_Id', $creator_id);
 
 		$newProduct -> save();
 		header('Location: '.BASE_URL.'/addItem/');
@@ -139,19 +127,7 @@ class ProductController {
 	public function editProduct($id) {
 		$pageName = 'Edit Product';
 		
-		$productClass = new Product();
-		$viewingProduct = $productClass->loadById($id);
-		
-		$product = array();
-		
-		$product['WineTitle'] = $viewingProduct->get('WineTitle');
-		$product['ShortDesc'] = $viewingProduct->get('ShortDesc');
-		$product['LongDesc'] = $viewingProduct->get('LongDesc');
-		$product['Volumes'] = $viewingProduct->get('Volumes');
-		$product['Price'] = $viewingProduct->get('Price');
-		$product['Rating'] = $viewingProduct->get('Rating');
-		$product['Date_Created'] = $viewingProduct->get('Date_Created');
-		$product['Img_Url'] = $viewingProduct->get('Img_Url');
+		$product = Product::loadById($id);
 
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/editProduct.tpl';
@@ -160,10 +136,10 @@ class ProductController {
 
 	//the process of changing the values in the database
 	public function editProductProcess($id) {	
-		$productChange = new Product();
-		$product = $productChange->loadById($id);
+		$product = Product::loadById($id);
+		$creator_id = $_SESSION['userID'];
 		
-		$product->set('id',$id);
+		$product->set('id', $id);
 		$product->set('WineTitle', $_POST['WineTitle']);
 		$product->set('ShortDesc', $_POST['ShortDesc']);
 		$product->set('LongDesc', $_POST['LongDesc']);
@@ -171,7 +147,7 @@ class ProductController {
 		$product->set('Price', $_POST['Price']);
 		$product->set('Rating', $_POST['Rating']);
 		$product->set('Img_Url', $_POST['Img_Url']);
-		$product->set('Creator_Id', 1);
+		$product->set('Creator_Id', $creator_id);
 		
 		$product->save();
 	    header('Location: '.BASE_URL.'/browse/');
@@ -180,9 +156,7 @@ class ProductController {
 	//retrieves the id from a post and puts it into a cart session
 	//puts all the product infromation as JSON into cart session
 	public function sessionPost($id){
-		$cartItem = new Product();
-		$cart = $cartItem->loadById($id);
-
+		$cart = Product::loadById($id);
 
 		$product['WineTitle'] = $cart->get('WineTitle');
 		$product['ShortDesc'] = $cart->get('ShortDesc');
