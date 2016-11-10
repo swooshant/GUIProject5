@@ -23,8 +23,8 @@ class User extends DbObject {
             'email' => null,
             'username' => '',
             'pw' => '',
-            'is_admin' => 0,
-            'is_elite' => 0
+            'is_admin' => null,
+            'is_elite' => null
             );
 
         $args += $defaultArgs;
@@ -56,7 +56,9 @@ class User extends DbObject {
             'pw' => $this->pw,
             'email' => $this->email,
             'first_name' => $this->first_name,
-            'last_name' => $this->last_name
+            'last_name' => $this->last_name,
+            'is_elite' => $this->is_elite,
+            'is_admin' => $this->is_admin
             );
         $db->store($this, __CLASS__, self::DB_TABLE, $db_properties);
     }

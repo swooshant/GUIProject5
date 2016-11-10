@@ -27,7 +27,7 @@
 				<input type="button" value="Cart" class="submit" />
 			  </form>
 			<?php else: ?>
-			  <form  id="login" action="<?= BASE_URL ?>/createAccount">
+			  <form  id="login" action="<?= BASE_URL ?>/createAccount" method="POST" >
 				<input type="submit" value="Create Account" class="submit" />
 				<input type="button" value="Cart" class="submit" />
 			  </form>
@@ -54,7 +54,7 @@
 				<li><a <?= isSelected($pageName, 'aboutUs') ?> href="<?= BASE_URL ?>/aboutUs/">About Us</a></li>
 				<li><a <?= isSelected($pageName, 'locations') ?> href="<?= BASE_URL ?>/locations/">Find Locations</a></li>
 
-				<?php if(isset($_SESSION['elite']) || isset($_SESSION['admin'])): ?>
+				<?php if((isset($_SESSION['elite']) && $_SESSION['elite'] == 1) || (isset($_SESSION['admin']) && $_SESSION['admin'] == 1)): ?>
 					<li><a <?= isSelected($pageName, 'profilePage') ?> href="<?= BASE_URL ?>/profilePage">Profile</a></li>		
 					<li><a <?= isSelected($pageName, 'addItem') ?> href="<?= BASE_URL ?>/addItem">Add Item</a></li>
 				<?php elseif(isset($_SESSION['userID'])): ?>

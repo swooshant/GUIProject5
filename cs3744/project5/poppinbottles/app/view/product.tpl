@@ -1,11 +1,15 @@
 <h1><a class="back" href="<?= BASE_URL ?>/browse/"> <<< back </a></h1>
+<div id="bodyWrapper">
 	<div id="prodcontent-left">
 			<form  action="<?= BASE_URL ?>/products/processEditDel/<?= $product->get('id') ?>" method="POST" >
 				<img src="<?= BASE_URL ?>/public/img/<?= $product->get('Img_Url') ?>" alt="Wine product chosen">
 				<br>
-				<?php if(isset($_SESSION['admin'])): ?>
-						  		<button class="submit" name="edit" value="editPressed" >Edit</button>
-						  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
+				<?php if(isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
+		  		<button class="submit" name="edit" value="editPressed" >Edit</button>
+		  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
+				<?php elseif(isset($_SESSION['elite']) && $_SESSION['elite'] == 1 && ($_SESSION['userID'] == $row['Creator_Id'])): ?>
+					<button class="submit" name="edit" value="editPressed" >Edit</button>
+		  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
 				<?php endif; ?>
 				<h2><?= $product->get('WineTitle') ?></h2>
 				<!-- reviews from Trip ADvisor!! -->
@@ -38,34 +42,68 @@
 			<button class="submit">Add to Cart</button>
 			<h3> Rating: <?= $product->get('Rating') ?>/5.0 </h3>
 
+			
 			<div id="revieWrapper">
-				<div class="reviews">
-					<h4 class="reviewHeader">
-						User123: Rating: *****: <?= $product->get('Date_Created') ?>
-					</h4>
-					<p class="reviewParagraph">
-								<!-- reviews from Trip ADvisor!! -->
+						<?php if($reviews == null): ?>
+							<h4 class="reviewHeader"> No reviews of this product yet.</h4> 
+						<?php else: ?>
+							<?php foreach($reviews as $review): ?>
+								<?php
 
-						The Wine Experience is the only way to see and learn about wineries in Uruguay. Ryan was amazing. He customizes your tour to the time you have, the type of wine tour you want, where you want to go and how long you want to be gone. He will accomodate you any way you need. We wanted to see Colonia and include the wine tasting and cheese tasting in this very famous cheese and wine area of Uruguay. We,3 of us, only had one day and Ryan made it happen without feeling rushed or pressured........We spent 2 and half hours in beautiful Colonia and had a light lunch before our tour started........18 wine tasting glasses and enough cheese tasting to compliment every glass of wine and more......then enjoying the ride back to Montevideo Ryan explained the region and history of the wines. AN AMAZING FULL AND ENJOYABLE DAY......We will be booking other areas of Uruguay with him and looking forward to his interesting stories of the different regions and the wines Uruguay has to offer. Just contact The Wine Experience and Ryan will make it happen!
+									$stars = '';
 
-					</p>
-				</div>	
-				<div class="reviews">
-					<h4 class="reviewHeader">
-						User999: Rating: ****: <?= $product->get('Date_Created') ?>
-					</h4>
-					<p class="reviewParagraph">
-								<!-- reviews from Trip ADvisor!! -->
-						I recently moved to Bay Ridge and am still getting to know the area. I was planning a small party for my mom and aunt visiting from the south and needed to get some supplies. I needed a mixed selection and only knowing slightly more than the basics of wine is made of grapes and whisky is dark can be frustrating. 
+									// full stars
+									for($i=0; $i<$review->get('rating'); $i++) {
+										$stars .= '&#9733;';
+									}
 
-						Joe helped me out and took his time making suggestions and comparisons. I was planning on buying a bottle of tequila for my aunt as one of her birthday gifts - I recalled her liking a certain brand but they were out. I was given the suggestion of 123 Organic Reposado (Dos) as well as an orange liqueur incase someone wanted to make a margarita. My mom likes her gin & tonics so he recommended Hendrick's (a name I was aware of but I am not a gin drinker) . 
+									// empty stars
+									for($i=0; $i<(5 - $review->get('rating')); $i++) {
+										$stars .= '&#9734;';
+									}
+									$username = User::getUsernameById($review->get('reviewer_id'));
+								?>
+								<!-- dont forget to add follow code from line 70 end -->
+								<!-- .= is a += but string concatenator -->
+						<div class="review">
+							<p class="rating"><?= $stars ?></p>
+							<p class="reviewParagrah"><?= $review->get('review') ?></p>
+							<!-- <p class="details">Posted by <strong><?= $username.$followButton ?></strong> on <?= date("m-j-y g:i a", strtotime($review->get('date_created'))) ?></p> $followButton = getFollowButton($username);-->
+						</div>
 
-						I also wanted/needed bottles of chardonnay from a local vineyard, vodka & a celebratory bottle of sparkling wine to pop. Joe also asked about my budget and we were able to compromise so I was able to get the best selection for my budget. I went in on a Wednesday night around 6:30/7pm, requested delivery around 8/8:30 and was able to get the delivery at 8pm on the dot. 
+					<?php endforeach; ?>
 
-						Everything was a hit! My aunt loved her tequila (so did my mom apparently) and was very impressed. My mom loved her gin. The only thing left is 1/2 a bottle of the orange liqueur.. Here I was worried that I may have bought too much but I was way off, I actually should have bought more. 
-
-						So I'll be back soon to pick out more so that 1/2 bottle of orange liqueur isn't so lonely. 
-					</p>
-				</div>	
+				<?php endif; ?>
+				<!-- User123: Rating: *****: <?= $product->get('Date_Created') ?> -->
 			</div>
-	</div>
+		</div>
+		<div id="addReview">
+			<?php if(isset($_SESSION['userID'])): ?>
+
+			<h2>Your review</h2>
+
+			<form method="POST" action="<?= BASE_URL ?>/products/view/<?= $product->get('id') ?>/review/">
+
+				<label>Rating:
+				<select name="rating">
+					<option value="0">0 stars (worst)</option>
+					<option value="1">1 star</option>
+					<option value="2">2 stars</option>
+					<option value="3">3 stars</option>
+					<option value="4">4 stars</option>
+					<option value="5">5 stars (best)</option>
+				</select>
+				</label>
+				<br><br>
+				<label>Review: <br>
+					<textarea name="review"></textarea>
+				</label>
+				<br>
+				<input type="submit" name="submit" value="Post Review">
+
+			</form>
+
+			<?php endif; ?>
+		</div>
+	
+</div>

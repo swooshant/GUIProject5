@@ -16,8 +16,9 @@ RewriteRule ^login/?$ app/controller/siteController.php?action=home [QSA,L]
 RewriteRule ^locations/?$ app/controller/siteController.php?action=locations [QSA,L]
 RewriteRule ^search/?$ app/controller/siteController.php?action=search [QSA,L]
 RewriteRule ^createAccount/?$ app/controller/siteController.php?action=createAccount [QSA,L]
-RewriteRule ^createAccount/process/?$ app/controller/sitecontroller.php?action=processNewUser [QSA,L]
+RewriteRule ^createAccounts/process/?$ app/controller/siteController.php?action=processNewUser [QSA,L]
 RewriteRule ^profilePage/?$ app/controller/siteController.php?action=profilePage [QSA,L]
+RewriteRule ^profilePage/updateProfile?$ app/controller/siteController.php?action=updateProfile [QSA,L]
 
 # Product
 RewriteRule ^products/view/(\d+)/?$ app/controller/productController.php?action=viewProduct&pid=$1 [QSA,L]
@@ -28,3 +29,4 @@ RewriteRule ^products/edit/(\d+)/process/?$ app/controller/productController.php
 RewriteRule ^products/addItem/process app/controller/productController.php?action=addItemProcess&pid=$1 [QSA,L]
 RewriteRule ^products/updateCart/?$ app/controller/productController.php?action=addToCart [QSA,L]
 RewriteRule ^products/updatePostCart/?$ app/controller/productController.php?action=postCart [QSA,L]
+RewriteRule ^products/view/(\d+)/review/?$ app/controller/productController.php?action=addReview&pid=$1 [QSA,L]

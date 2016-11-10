@@ -121,6 +121,7 @@
 	<div id="browseContent">
 		<!-- All descriptions, wine names and images are from TotalWine.com -->
 		<div class="rows">	
+
 			<?php while($row = mysql_fetch_assoc($result)): ?>
 				<form action="<?= BASE_URL ?>/products/processEditDel/<?= $row['id'] ?>" method="POST" >
 					<!-- All descriptions, wine names and images are from TotalWine.com -->
@@ -132,11 +133,14 @@
 						<button class="submit" type="button" id = "updateCart" value="cartPressed" onclick="postToSession(<?=$row['id']?>)"> Add to Cart</button>
 						<p class="shortdesc"><?= $row['ShortDesc'] ?></p>
 						<p class="price"><?= $row['Price'] ?></p>
-						<?php if(isset($_SESSION['admin'])): ?>
+						<?php if(isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
 							<button class="submit" name="edit" value="editPressed" >Edit</button>
 							<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
-
+						<?php elseif(isset($_SESSION['elite']) && $_SESSION['elite'] == 1 && ($_SESSION['userID'] == $row['Creator_Id'])): ?>							
+							<button class="submit" name="edit" value="editPressed" >Edit</button>
+							<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
 						<?php endif; ?>
+
 					</div>
 				</form>
 			<?php endwhile; ?>

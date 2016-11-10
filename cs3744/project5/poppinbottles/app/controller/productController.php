@@ -56,6 +56,10 @@ class ProductController {
 			case 'addToCart':
 				$this->addToCart();
 			break;
+			case 'addReview':
+				$productID = $_GET['pid'];
+				$this->addReview($productID);
+			break;
 			//default case to home
 			default:
 				header('Location: '.BASE_URL);
@@ -68,8 +72,8 @@ class ProductController {
 	//retieves the data from the database
 	public function viewProduct($id) {
 		$pageName = 'Product';
-	
 		$product = Product::loadById($id);
+		$reviews = Review::getReviewsByProductId($id);
 
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/product.tpl';
@@ -138,9 +142,10 @@ class ProductController {
 	public function editProductProcess($id) {	
 		$product = Product::loadById($id);
 		$creator_id = $_SESSION['userID'];
-		
+		$title = $_POST['WineTitle'];
+
 		$product->set('id', $id);
-		$product->set('WineTitle', $_POST['WineTitle']);
+		// $product->set('WineTitle', $_POST['WineTitle']);
 		$product->set('ShortDesc', $_POST['ShortDesc']);
 		$product->set('LongDesc', $_POST['LongDesc']);
 		$product->set('Volumes', $_POST['Volumes']);
@@ -148,9 +153,26 @@ class ProductController {
 		$product->set('Rating', $_POST['Rating']);
 		$product->set('Img_Url', $_POST['Img_Url']);
 		$product->set('Creator_Id', $creator_id);
-		
+
+
+		// did the title change?
+		if($product->get('title') != $title) {
+
+			// log the event
+			$e = new Event(array(
+					'event_type_id' => EventType::getIdByName('edit_product_title'),
+					'user_1_id' => $_SESSION['userID'],
+					'product_1_id' => $id,
+					'data_1' => $product->get('WineTitle'),
+					'data_2' => $title
+			));
+
+			// change the title
+			$product->set('WineTitle', $title);
+			$e->save();
+		}
 		$product->save();
-	    header('Location: '.BASE_URL.'/browse/');
+	    	header('Location: '.BASE_URL.'/browse/');
 	}
 
 	//retrieves the id from a post and puts it into a cart session
@@ -202,6 +224,26 @@ class ProductController {
 
 		$productJSON = json_encode($_SESSION['cart']);
 		echo $productJSON;
+	}
+
+	public function addReview($productID) {
+
+		$rating = $_POST['rating'];
+		$review = $_POST['review'];
+		$reviewerID = $_SESSION['userID']; // the logged-in user
+
+		// create and save the new product review
+		$nr = new Review(array(
+			'rating' => $rating,
+			'review' => $review,
+			'reviewer_id' => $reviewerID,
+			'product_id' => $productID
+		));
+		$nr->save();
+
+		// redirect us
+		header('Location: '.BASE_URL.'/products/view/'.$productID);
+		exit();
 	}
 	
 }

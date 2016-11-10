@@ -407,7 +407,7 @@ img.logo{
 	width: 42%;
 	display: inline-block;
 	padding: 20px; 
-	height: 90%;
+	height: 875px;
 	margin: auto;
 }
 #prodcontent-right h5{
@@ -448,7 +448,7 @@ img.logo{
 	padding-right: 0;
 	margin-top: 10px;
 	width: 90%;
-	height: 875px;
+	height: 100%;
 	border: 5px solid black;
 }
 
@@ -461,6 +461,17 @@ img.logo{
 	margin: auto;
 }
 
+#addReview {
+	display: inline-block;
+	width: 100%;
+	margin: auto;
+	height: 10%;
+}
+
+#addReview textarea {
+  width: 350px;
+  height: 200px;
+}
 /*end product page*/
 
 

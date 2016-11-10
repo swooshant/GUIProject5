@@ -49,6 +49,9 @@ class SiteController {
 			case 'profilePage': 
 				$this->profilePage();
 			break;
+			case 'updateProfile':
+				$this->updateProfile();
+			break;
 				// Defaults to homepage url
       		default:
         			header('Location: '.BASE_URL);
@@ -110,6 +113,8 @@ class SiteController {
 		$user = User::loadByUsername($u);
 
 		session_start();
+
+
 
 		if($user == null) 
 		{
@@ -215,6 +220,7 @@ class SiteController {
 
 	//Loads the templates for the new user page
 	public function createAccountPage(){
+		$pageName = 'createAccountPage';		
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/createAccount.tpl';
 		include_once SYSTEM_PATH.'/view/footer.tpl';
@@ -225,30 +231,102 @@ class SiteController {
 	public function processNewUser() {
 		$user = new User();
 		
-		$username = $_POST['username'];
-		$password = $_POST['password'];
-
-		$user->set('first_name', $_POST['firstname']);
-		$user->set('last_name', $_POST['lastname']);
-		$user->set('email', $_POST['email']);
-		$user->set('username', $username);
-		$user->set('pw', $password);
-
-		if ($_POST(['userType'] == "elite")) {
-			$user->set('is_elite', 1);
+		if (!isset($_SESSION)) {
+			session_start();
 		}
 
-		$user -> save();
-		processLogin($username, $password);
-		header('Location: '.BASE_URL);
+		$username = $_POST['accountusername'];
+		$password = $_POST['accountpassword'];
+
+		$conn = mysql_connect(DB_HOST, DB_USER, DB_PASS)
+			or die ('Error: Could not connect to MySql database');
+		mysql_select_db(DB_DATABASE);
+
+		$query = 'SELECT * FROM user WHERE username = "'.$_POST['accountusername'].'"';
+
+		$result = mysql_query($query);
+
+		if ($result && mysql_num_rows($result)>0) {
+			$_SESSION['accounterror'] = 'Username Already Exists';
+			header('Location: '.BASE_URL.'/createAccount');
+		}
+		else {
+			$user->set('first_name', $_POST['accountfirstname']);
+			$user->set('last_name', $_POST['accountlastname']);
+			$user->set('email', $_POST['accountemail']);
+			$user->set('username', $username);
+			$user->set('pw', $password);
+
+			if ($_POST['accountuserType'] == 'elite') {
+			 	$user->set('is_elite', 1);
+			}
+			$_SESSION['accounterror'] = null;
+			$user->save();
+
+
+			$this->processLogin($username, $password);
+			header('Location: '.BASE_URL);
+			exit();
+		}
+
+		
 	}
 
 	public function profilePage() {
-		$pageName = 'profilePage';		
-		$userID = $_SESSION['userID'];
+		$pageName = 'profilePage';
+		session_start();		
+		//$user = $_SESSION['userID'];
+		$u = $_SESSION['username'];
+		$user = User::loadByUsername($u);
 
+		if(isset($_SESSION['userID'])) {
+			$events = Event::getEventsByUserId($_SESSION['userID']);
+		}	
+
+		include_once SYSTEM_PATH.'/view/helpers.php';
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/profilePage.tpl';
-		include_once SYSTEM_PATH.'/view/footer.tpl';
+		include_once SYSTEM_PATH.'/view/footer.tpl';	
+	}
+	
+	public function updateProfile()
+	{
+		session_start();
+		$u = $_SESSION['username'];
+		$user = User::loadByUsername($u);
+		$firstPassword = $_POST['newPassword1'];
+		$secondPassword = $_POST['newPassword2'];
+		$newAccountType = $_POST['accountType'];
+		if ($newAccountType == 'elite')
+		{
+			$user->set('is_elite', 1);
+		}
+		else
+		{
+			$user->set('is_elite', 0);
+		}
+
+		if ($firstPassword == "" && $secondPassword == "")
+		{
+			$_SESSION['profile'] = "Account updated. Password was not changed.";
+		}
+		else if ($firstPassword == "" || $secondPassword == "")
+		{
+			$_SESSION['profile'] = "Error: you cannot have an empty password!";
+		}
+		else if ($firstPassword != $secondPassword)
+		{
+			$_SESSION['profile'] = "Passwords do not match.";
+		}
+		else
+		{
+			$user->set('pw', $firstPassword);
+			$_SESSION['profile'] = "Changes saved.";
+		}
+		$user->save();
+
+		header('Location: '.BASE_URL."/profilePage");
+		exit();
+
 	}
 }

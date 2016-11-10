@@ -23,10 +23,12 @@
 					<!--	<button class="submit" type="button" value="cartPressed" onclick="<?php $this->addToCart ?>"> Add to Cart</button> -->
 						<p><?= $row['ShortDesc'] ?></p>
 						<p class="price"><?= $row['Price'] ?></p>
-						<?php if(isset($_SESSION['admin'])): ?>
-					  		<button class="submit" name="edit" value="editPressed" >Edit</button>
-						  	<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
-					  	
+						<?php if(isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
+							<button class="submit" name="edit" value="editPressed" >Edit</button>
+							<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
+						<?php elseif(isset($_SESSION['elite']) && $_SESSION['elite'] == 1 && ($_SESSION['userID'] == $row['Creator_Id'])): ?>							
+							<button class="submit" name="edit" value="editPressed" >Edit</button>
+							<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
 						<?php endif; ?>
 					</form>
 					</div>
