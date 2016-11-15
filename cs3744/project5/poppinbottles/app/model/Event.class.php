@@ -88,6 +88,47 @@ class Event extends DbObject {
       }
     }
 
+    public static function getEventsByFollowed($userID=null, $limit=null)
+    {
+      $db = Db::instance();
+      if ($userID == null) {
+        return null;
+      }
+      $followed = Follow::getFollowingIDs($userID);
+      $query = '';
+      if ($followed == null)
+      {
+        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id = %d ORDER BY date_created DESC  ",
+          self::DB_TABLE,
+          $userID
+        );
+
+      }
+      else {
+        //$map = array_map('intval', $followed);
+        $matches = implode(',', $followed);
+        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id IN ($matches) OR user_1_id = %d ORDER BY date_created DESC  ",
+          self::DB_TABLE,
+          $userID
+        );
+      }
+      
+      if($limit != null) {
+        $query .= " LIMIT ".$limit;
+      }
+
+      $result = $db->lookup($query);
+      if(!mysql_num_rows($result))
+          return null;
+      else {
+          $objects = array();
+          while($row = mysql_fetch_assoc($result)) {
+              $objects[] = self::loadById($row['id']);
+          }
+          return ($objects);
+      }
+    }
+
     public static function getEventsByUserId($userID = null, $limit=null) {
       if($userID == null)
         return null;

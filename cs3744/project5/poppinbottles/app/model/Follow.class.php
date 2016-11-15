@@ -47,26 +47,127 @@ class Follow extends DbObject {
 
     // load a Follow object by usernames
     public static function loadByUsernames($followerUsername=null, $followeeUsername=null) {
+       
       if($followerUsername == null || $followeeUsername == null) {
-        return null;
+         return null;
       }
 
       $followerID = User::loadByUsername($followerUsername)->get('id');
       $followeeID = User::loadByUsername($followeeUsername)->get('id');
+
       $query = sprintf("SELECT * FROM `%s` WHERE follower_id = %d AND followee_id = %d ",
         self::DB_TABLE,
         $followerID,
         $followeeID
         );
+      
       $db = Db::instance();
       $result = $db->lookup($query);
-      if(!mysql_num_rows($result))
-          return null;
+
+      if(!mysql_num_rows($result)) {
+          return null; 
+      }
       else {
           $row = mysql_fetch_assoc($result);
           $obj = self::loadById($row['id']);
           return ($obj);
       }
+}
+
+    public static function getFollowers($followeeID=null) {
+      if ($followeeID == null) {
+        return null;
+      }
+
+      $query = sprintf("SELECT * FROM `%s` WHERE followee_id = %d ",
+        self::DB_TABLE,
+        $followeeID
+      );
+
+      $db = Db::instance();
+      $result = $db->lookup($query);
+
+      if (!mysql_num_rows($result)) {
+        return null;
+      }
+      else {
+        $followers = array();
+        while($row = mysql_fetch_assoc($result)) {
+          $followerUsername = User::getUsernameById($row['follower_id']);
+          $followers[] = $followerUsername;
+        }
+
+        return ($followers);
+      }
+          
     }
+
+    public static function getFollowing($followerID=null) {
+      if ($followerID == null) {
+        return null;
+      }
+
+      $query = sprintf("SELECT * FROM `%s` WHERE follower_id = %d ",
+        self::DB_TABLE,
+        $followerID
+      );
+
+      $db = Db::instance();
+      $result = $db->lookup($query);
+
+      if (!mysql_num_rows($result)) {
+        return null;
+      }
+      else {
+        $following = array();
+        while($row = mysql_fetch_assoc($result)) {
+          $followingUsername = User::getUsernameById($row['followee_id']);
+          $following[] = $followingUsername;
+        }
+
+        return ($following);
+      }
+          
+    }
+
+    public static function getFollowingIDs($followerID=null) {
+      if ($followerID == null) {
+        return null;
+      }
+
+      $query = sprintf("SELECT * FROM `%s` WHERE follower_id = %d ",
+        self::DB_TABLE,
+        $followerID
+      );
+
+      $db = Db::instance();
+      $result = $db->lookup($query);
+
+      if (!mysql_num_rows($result)) {
+        return null;
+      }
+      else {
+        $following = array();
+        while($row = mysql_fetch_assoc($result)) {
+          $followingUsername = User::getUsernameById($row['followee_id']);
+          $following[] = $row['followee_id'];
+        }
+
+        return ($following);
+      }
+          
+    }
+
+    public static function deleteUsername($userID=null, $followeeID=null) {
+
+    $query = sprintf(" DELETE FROM %s WHERE follower_id = %d AND followee_id = %d ",
+              self::DB_TABLE,
+              $userID,
+              $followeeID
+        );
+
+        $db = Db::instance();
+        $result = $db->lookup($query);
+      }
 
 }

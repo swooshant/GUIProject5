@@ -420,6 +420,15 @@ img.logo{
 
 }
 
+#prodcontent-right h3{
+	margin: 0;
+	margin-top: 5px;
+	width: 55%;
+	clear: both;
+	text-align: left;
+	text-decoration: none  !important;
+}
+
 #prodcontent-right .submit{
 	width: 200px;
 	height: 50px;
@@ -429,7 +438,7 @@ img.logo{
 #prodcontent-right .dropdown {
 	float: right;
 	width: 32%;
-	margin-left: -10px; 
+	margin-left: -20px; 
 	width: 250px;
 }
 
@@ -656,3 +665,4 @@ p.zipcodefield {
 	margin-left: 20%;
 }
 /*End Location*/
+

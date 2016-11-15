@@ -44,12 +44,13 @@
 			if ($user->get('is_admin') == 1)
 			{
 				//don't show account type
+
 				echo '<select name="accountType">
-					<option value="admin" selected>Admin</option>
+						<option value="admin" selected>Admin</option>
 			    	<option value="elite" >Elite</option>
 			    	<option value="regular">Regular</option>
-				</select> <br><br>';
-				?>
+					</select> <br><br>';
+			?>
 
 				<button class="submit" name="submit" onclick="return confirm('Warning: you are an admin. Are you sure want to update your changes? Note: You cannot change back to an admin account from an elite/regular account.');">Save Changes</button>
 			<?php
@@ -82,15 +83,57 @@
 	</p>
 	<h2 class="aboutUsHeadings" > My Cart </h2> <!-- Current Products -->
 
-	<p class="aboutUsParagraph"> 
-		We are an online retailer as well as a high volume producer of wine. We have three distinct winery's located accross the United States. The first two are in Nappa Valley and the third one is in Virginia. You can view the winery's on the home page. We do everything from growing the grapes to bottling and shipping. Lastly, we provide the highest quality of wine from other producers.
-	</p>
+		<?php
+			$cartProducts = Cart::getCartProducts($user->get('id'));
+			$cartQuantities = Cart::getCartQuantities($user->get('id'));
+
+			for ($i = 0; $i < count($cartProducts); $i++) {
+				$productID = Product::loadById($cartProducts[$i])->get('id');
+				$productTitle = Product::loadById($cartProducts[$i])->get('WineTitle');
+				$productPrice = Product::loadById($cartProducts[$i])->get('Price');
+
+				echo '<br> <li style="list-style: none; color: green;">Name: <a href="'.BASE_URL.'/products/view/'.$productID.'">'.$productTitle.'</a>, Price: '.$productPrice.', Quantity: '.$cartQuantities[$i].'</li>';
+			}
+		?>
 
 	<h2 class="aboutUsHeadings" > My Orders </h2> <!-- Past Products -->
 	<h2 class="aboutUsHeadings" > My Listings </h2> <!-- My Listings -->
-	<h2 class="aboutUsHeadings" > Followers </h2> <!-- Followers -->
-	<h2 class="aboutUsHeadings" > Following </h2> <!-- Following -->
+		<ul>
+			<?php
+				$listingArray = array();
+				$listingArray = Product::getByCreator($user->get('id'));
 
+				for ($i = 0; $i < count($listingArray); $i++) {
+					echo '<li style="list-style: none;">'.$listingArray[$i].'</li>';
+				}
+			?>
+		</ul>
+	<h2 class="aboutUsHeadings" > Followers </h2> <!-- Followers -->
+		<ul>
+			<?php
+				$followersArray = array();
+				$followersArray = Follow::getFollowers($user->get('id'));
+
+				for ($i = 0; $i < count($followersArray); $i++) {
+					echo '<li style="list-style:none;font-weight:bold">'.$followersArray[$i].'</li>';
+				}
+			?>
+		</ul>
+	<h2 class="aboutUsHeadings" > Following </h2> <!-- Following -->
+		<ul>
+			<?php
+				$followingArray = array();
+				$followingArray = Follow::getFollowing($user->get('id'));
+
+				for ($i = 0; $i < count($followingArray); $i++) {
+					echo '<li style="list-style: none; color:black; font-weight: bold;" 
+							class="unfollow'.$followingArray[$i].'">'.$followingArray[$i].' 
+							<button type="button" class="unfollow submit" value="'.$followingArray[$i].'">Unfollow
+							</button>
+						</li>';
+				}
+			?>
+		</ul>
 	<?php if(isset($events)): ?>
 
 		<h2 class="aboutUsHeadings" > Activity Feed </h2> <!-- Actions of people that you follow as well as yourself -->
@@ -101,7 +144,7 @@
 
 		<ul>
 			<?php foreach($events as $event): ?>
-		    		<li><?= formatEvent($event) ?></li>
+		    		<li  style="list-style: none; color:blue; font-weight: bold;" ><?= formatEvent($event) ?></li>
 		  	<?php endforeach; ?>
 		</ul>
 

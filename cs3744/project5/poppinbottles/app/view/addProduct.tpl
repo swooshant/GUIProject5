@@ -1,4 +1,4 @@
-<?php if(isset($_SESSION['admin'])): ?>
+<?php if(isset($_SESSION['userID'])): ?>
 <div id="bodyWrapper">
 
 	<h2>Add products</h2>

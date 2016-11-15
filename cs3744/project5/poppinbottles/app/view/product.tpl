@@ -4,13 +4,15 @@
 			<form  action="<?= BASE_URL ?>/products/processEditDel/<?= $product->get('id') ?>" method="POST" >
 				<img src="<?= BASE_URL ?>/public/img/<?= $product->get('Img_Url') ?>" alt="Wine product chosen">
 				<br>
-				<?php if(isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
-		  		<button class="submit" name="edit" value="editPressed" >Edit</button>
-		  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
-				<?php elseif(isset($_SESSION['elite']) && $_SESSION['elite'] == 1 && ($_SESSION['userID'] == $row['Creator_Id'])): ?>
-					<button class="submit" name="edit" value="editPressed" >Edit</button>
-		  		<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
-				<?php endif; ?>
+				<form action="<?= BASE_URL ?>/products/processEditDel/<?= $product->get('id') ?>" method="POST" >
+					<?php if(isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
+				  	<button class="submit" name="edit" value="editPressed" >Edit</button>
+				  	<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
+					<?php elseif(isset($_SESSION['elite']) && $_SESSION['elite'] == 1 && ($_SESSION['userID'] == $product->get('Creator_Id'))): ?>
+						<button class="submit" name="edit" value="editPressed" >Edit</button>
+				  	<button class="submit" name="delete" onclick="return confirm('Are you sure you want to delete this item?');" value="deletePressed">Delete</button>
+					<?php endif; ?>
+				</form>
 				<h2><?= $product->get('WineTitle') ?></h2>
 				<!-- reviews from Trip ADvisor!! -->
 				<!-- ALL Descriptions are from TotalWine.com -->
@@ -40,9 +42,11 @@
 			</div>
 
 			<button class="submit">Add to Cart</button>
-			<h3> Rating: <?= $product->get('Rating') ?>/5.0 </h3>
-
 			
+			<?php if(isset($_SESSION['userID'])): ?>
+				<h3> <a href="#addReview"> Add a Review! </a></h3>
+			<?php endif; ?>
+
 			<div id="revieWrapper">
 						<?php if($reviews == null): ?>
 							<h4 class="reviewHeader"> No reviews of this product yet.</h4> 
@@ -62,13 +66,15 @@
 										$stars .= '&#9734;';
 									}
 									$username = User::getUsernameById($review->get('reviewer_id'));
+									$followButton = getFollowButton($username);
 								?>
 								<!-- dont forget to add follow code from line 70 end -->
 								<!-- .= is a += but string concatenator -->
 						<div class="review">
-							<p class="rating"><?= $stars ?></p>
-							<p class="reviewParagrah"><?= $review->get('review') ?></p>
-							<!-- <p class="details">Posted by <strong><?= $username.$followButton ?></strong> on <?= date("m-j-y g:i a", strtotime($review->get('date_created'))) ?></p> $followButton = getFollowButton($username);-->
+							<p class="rating">Rating: <?= $stars ?></p>
+							<p class="reviewParagraph"><?= $review->get('review') ?></p>
+							<p class="reviewParagraph">Posted by <strong><?= $username.$followButton ?></strong> on <?= date("m-j-y g:i a", strtotime($review->get('date_created'))) ?></p>
+							<hr>
 						</div>
 
 					<?php endforeach; ?>

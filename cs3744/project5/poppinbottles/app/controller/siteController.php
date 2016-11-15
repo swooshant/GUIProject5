@@ -52,6 +52,21 @@ class SiteController {
 			case 'updateProfile':
 				$this->updateProfile();
 			break;
+			case 'follow':
+				$username = $_POST['username'];
+				$this->follow($username);
+			break;
+			case 'unfollow':
+				$username = $_POST['username'];
+				$this->unfollow($username);
+			break;
+			case 'userEdit':
+				$this->userEdit();
+			break;
+			case 'updateElite':
+				$this->updateElite();
+			break;
+			
 				// Defaults to homepage url
       		default:
         			header('Location: '.BASE_URL);
@@ -62,14 +77,13 @@ class SiteController {
 	//loads home page and also the top rated items
   	public function home() {
 		$pageName = 'Home';
-		
-		// load the top rated into results, to be used by home.tpl
-		$conn = mysql_connect(DB_HOST, DB_USER, DB_PASS)
-			or die ('Error: Could not connect to MySql database');
-		mysql_select_db(DB_DATABASE);
-		$q = "SELECT * FROM product ORDER BY Rating DESC LIMIT 0, 5; ";
-		$result = mysql_query($q);
+		session_start();
+		$result = Product::getAllProducts("Rating", "0,5");
+		if(isset($_SESSION['userID'])) {
+			$events = Event::getEventsByFollowed($_SESSION['userID']);
+		}	
 
+		include_once SYSTEM_PATH.'/view/helpers.php';
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/home.tpl';
 		include_once SYSTEM_PATH.'/view/footer.tpl';
@@ -79,12 +93,7 @@ class SiteController {
 	public function browse() {
 		$pageName = 'browse';
 
-		// load the top rated into results, to be used by home.tpl
-		$conn = mysql_connect(DB_HOST, DB_USER, DB_PASS)
-			or die ('Error: Could not connect to MySql database');
-		mysql_select_db(DB_DATABASE);
-		$q = "SELECT * FROM product ORDER BY Date_Created DESC";
-		$result = mysql_query($q);
+		$result = Product::getAllProducts("Date_Created");
 
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/browse.tpl';
@@ -110,11 +119,10 @@ class SiteController {
   	//gets admin data (id 1) and checks against it to let a login happen
 	public function processLogin($u, $p) {
 		$pageName = 'processLogin';
-		$user = User::loadByUsername($u);
 
 		session_start();
 
-
+		$user = User::loadByUsername($u);
 
 		if($user == null) 
 		{
@@ -128,14 +136,29 @@ class SiteController {
 			header('Location: '.BASE_URL);
 			exit();
 		}
-		else
+		else // successful
 		{
+			$name =  $user->get('id');
+
+			$cartQuantities = Cart::getCartQuantities($name);
+			$cartProducts = Cart::getCartProducts($name);
+
+	          	$cartData = array();
+			for ($i = 0; $i < count($cartProducts); $i++) {
+				
+				$title = Product::loadById($cartProducts[$i])->get('WineTitle');
+				$price = Product::loadById($cartProducts[$i])->get('Price');
+
+				$cartData[] = '{"WineTitle":"'.$title.'","Price":"'.$price.'","Quantity":"'.$cartQuantities[$i].'"}';
+			} 
+			
+			$_SESSION['cart'] =  $cartData;
 			$_SESSION['username'] = $user->get('username');
 			$_SESSION['userID'] = $user->get('id');
 			$_SESSION['admin'] = $user->get('is_admin');
 			$_SESSION['elite'] = $user->get('is_elite');
-			
 			$_SESSION['msg'] = 'Logged In As: '.$user->get('username');
+			
 			header('Location: '.BASE_URL);
 			exit();
 		}
@@ -220,10 +243,12 @@ class SiteController {
 
 	//Loads the templates for the new user page
 	public function createAccountPage(){
-		$pageName = 'createAccountPage';		
+		$pageName = 'createAccountPage';	
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/createAccount.tpl';
 		include_once SYSTEM_PATH.'/view/footer.tpl';
+		session_start();
+		$_SESSION['accounterror'] = null;
 	}
 	
 	//TODO
@@ -238,15 +263,9 @@ class SiteController {
 		$username = $_POST['accountusername'];
 		$password = $_POST['accountpassword'];
 
-		$conn = mysql_connect(DB_HOST, DB_USER, DB_PASS)
-			or die ('Error: Could not connect to MySql database');
-		mysql_select_db(DB_DATABASE);
+		$userCheck = User::loadByUsername($_POST['accountusername']);
 
-		$query = 'SELECT * FROM user WHERE username = "'.$_POST['accountusername'].'"';
-
-		$result = mysql_query($query);
-
-		if ($result && mysql_num_rows($result)>0) {
+		if ($userCheck) {
 			$_SESSION['accounterror'] = 'Username Already Exists';
 			header('Location: '.BASE_URL.'/createAccount');
 		}
@@ -267,9 +286,7 @@ class SiteController {
 			$this->processLogin($username, $password);
 			header('Location: '.BASE_URL);
 			exit();
-		}
-
-		
+		}	
 	}
 
 	public function profilePage() {
@@ -306,6 +323,8 @@ class SiteController {
 			$user->set('is_elite', 0);
 		}
 
+		$_SESSION['elite'] = $user->get('is_elite');
+
 		if ($firstPassword == "" && $secondPassword == "")
 		{
 			$_SESSION['profile'] = "Account updated. Password was not changed.";
@@ -328,5 +347,107 @@ class SiteController {
 		header('Location: '.BASE_URL."/profilePage");
 		exit();
 
+	}
+
+	public function follow($followeeUsername) {
+		session_start();
+		if(!isset($_SESSION['userID'])) {
+			// user isn't logged in, so can't follow anyone
+			$json = array('error' => 'You are not logged in.');
+			echo json_encode($json);
+		} else {
+			// user is logged in
+			// get user ID for followee
+			$followee = User::loadByUsername($followeeUsername);
+
+			// does this follow already exist?
+			$f = Follow::loadByUsernames($_SESSION['username'], $followeeUsername);
+			if($f != null) {
+				// follow already happened!
+				$json = array('error' => 'You already followed this user.');
+				echo json_encode($json);
+			}
+
+			// save the new follow
+			$f = new Follow(array(
+				'follower_id' => $_SESSION['userID'],
+				'followee_id' => $followee->get('id')
+				));
+			$f->save();
+
+			// log the follow event
+			$e = new Event(array(
+					'event_type_id' => EventType::getIdByName('follow_user'),
+					'user_1_id' => $f->get('follower_id'),
+					'user_2_id' => $f->get('followee_id'),
+					'data_1' => $followeeUsername
+			));
+			$e->save();
+
+			// we're done
+			$json = array('success' => 'success');
+			echo json_encode($json);
+		}
+	}
+
+	public function unfollow($followeeUsername) {
+		session_start();
+		if(!isset($_SESSION['userID'])) {
+			// user isn't logged in, so can't follow anyone
+			$json = array('error' => 'You are not logged in.');
+			echo json_encode($json);
+		} else {
+			// user is logged in
+			// get user ID for followee
+			$followee = User::loadByUsername($followeeUsername);
+
+			Follow::deleteUsername($_SESSION['userID'], $followee->get('id'));
+
+			// log the unfollow event
+			$e = new Event(array(
+					'event_type_id' => EventType::getIdByName('unfollow_user'),
+					'user_1_id' => $_SESSION['userID'],
+					'user_2_id' => $followee->get('id'),
+					'data_1' => $followeeUsername
+			));
+			$e->save();
+
+			// we're done
+			$json = array('success' => 'success');
+			echo json_encode($json);
+		}
+	}
+
+	public function userEdit(){
+		$pageName = 'userEdit';
+
+		$allUsers = User::getAllUsernames(); 
+
+		include_once SYSTEM_PATH.'/view/helpers.php';
+		include_once SYSTEM_PATH.'/view/header.tpl';
+		include_once SYSTEM_PATH.'/view/userEdit.tpl';
+		include_once SYSTEM_PATH.'/view/footer.tpl';
+
+	}
+
+	public function updateElite(){
+		$name = $_POST['radioName'];
+		$pieces = explode(" ", $name);
+
+		echo $pieces[0];
+		echo $pieces[1];
+
+		$updateUser = User::loadByUsername($pieces[0]);
+
+
+		if ($pieces[1] == "elite") {
+	    	$updateUser->set('is_elite', 1);
+		}
+		else{
+			$updateUser->set('is_elite', 0);
+		}
+		$updateUser->save();
+	    
+	    header('Location: '.BASE_URL.'/userEdit/');
 	}
 }

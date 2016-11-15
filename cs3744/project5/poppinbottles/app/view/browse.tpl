@@ -39,13 +39,27 @@
 					
 					success: function(result)
 					{
-
+						var totalCost = 0.0;
 						$cart.empty(); // clears all the li tags in the cartItems div
 
 						$.each(result, function(i, item) {
 							var json = JSON.parse(item); // converts Array to JSON
-							$cart.append('<li>' + json.WineTitle + ', Price: $' + json.Price + '</li>'); //adds wine item to the cart
+							$cart.append('<li style="color:green; list-style: none;" >' + json.WineTitle + ', Price: $' + json.Price + ', Quantity: ' + json.Quantity +'</li>' + '<br>'); //adds wine item to the cart
+							totalCost = totalCost + (parseFloat(json.Price) * parseFloat(json.Quantity));
 						});
+						
+						var userID = "<?= $_SESSION['userID'] ?>";
+
+						if(!$.isEmptyObject(result)){
+							$cart.append('<h5>' + 'Total Cost: $' + (Math.round(totalCost * 100) / 100) + '</h5>');
+						}
+						else if(!userID) {
+							$cart.append('<h4 style="color:red;" >' + 'Log In to Add to Cart' + '</h4>');
+						}
+						else{	
+							$cart.append('<h4 style="color:blue;" >' + 'Your Cart is Empty' + '</h4>');
+						}
+
 					},
 					error: function() {
 						alert('error when updating the cart.');
@@ -73,8 +87,8 @@
 						updateTheCart(); //update the layout of the cart asynchronously
 					},
 					error: function(xhr, status, error) {
-						var err = eval("(" + xhr.responseText + ")");
-						alert(err.Message);
+						//var err = eval("(" + xhr.responseText + ")");
+						alert('error when posting to session.');
 					}
 				});
 			}

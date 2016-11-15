@@ -19,6 +19,10 @@ RewriteRule ^createAccount/?$ app/controller/siteController.php?action=createAcc
 RewriteRule ^createAccounts/process/?$ app/controller/siteController.php?action=processNewUser [QSA,L]
 RewriteRule ^profilePage/?$ app/controller/siteController.php?action=profilePage [QSA,L]
 RewriteRule ^profilePage/updateProfile?$ app/controller/siteController.php?action=updateProfile [QSA,L]
+RewriteRule ^user/follow/?$ app/controller/siteController.php?action=follow [QSA,L]
+RewriteRule ^user/unfollow/?$ app/controller/siteController.php?action=unfollow [QSA,L]
+RewriteRule ^userEdit/?$ app/controller/siteController.php?action=userEdit [QSA,L]
+RewriteRule ^updateElite/?$ app/controller/siteController.php?action=updateElite [QSA,L]
 
 # Product
 RewriteRule ^products/view/(\d+)/?$ app/controller/productController.php?action=viewProduct&pid=$1 [QSA,L]

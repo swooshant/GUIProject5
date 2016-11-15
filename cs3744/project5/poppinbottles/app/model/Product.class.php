@@ -69,22 +69,68 @@ class Product extends DbObject {
         return $obj;
     }
 
+    public static function deleteById($id){
+        $db = Db::instance();
+        $db->delete($id, self::DB_TABLE);
+    }
+
+    public static function getByCreator($creatorID) {
+        if ($creatorID == null) {
+        return null;
+      }
+
+      $query = sprintf("SELECT * FROM `%s` WHERE creator_id = %d ",
+        self::DB_TABLE,
+        $creatorID
+      );
+
+      $db = Db::instance();
+      $result = $db->lookup($query);
+
+      if (!mysql_num_rows($result)) {
+        return null;
+      }
+      else {
+        $listings = array();
+        while($row = mysql_fetch_assoc($result)) {
+          $listings[] = $row['WineTitle'];
+        }
+
+        return ($listings);
+      }
+    }
+
     // load all products
-    public static function getAllProducts($limit=null) {
-        $query = sprintf(" SELECT id FROM %s ORDER BY Date_Created DESC ",
-            self::DB_TABLE
+    public static function getAllProducts($ordering=null, $limit=null) {
+        if($limit){
+           $query = sprintf(" SELECT * FROM %s ORDER BY %s DESC LIMIT %s ",
+            self::DB_TABLE,
+            $ordering,
+            $limit
             );
+       }
+       else{
+        $query = sprintf(" SELECT * FROM %s ORDER BY %s DESC ",
+            self::DB_TABLE,
+            $ordering
+            );
+        }   
+        // $query = sprintf(" SELECT * FROM %s ORDER BY Date_Created DESC ",
+        //     self::DB_TABLE
+        //     // $limit
+        //     );
         $db = Db::instance();
         $result = $db->lookup($query);
-        if(!mysql_num_rows($result))
-            return null;
-        else {
-            $objects = array();
-            while($row = mysql_fetch_assoc($result)) {
-                $objects[] = self::loadById($row['id']);
-            }
-            return ($objects);
-        }
+        return ($result);
+        // if(!mysql_num_rows($result))
+        //     return null;
+        // else {
+        //     $objects = array();
+        //     while($row = mysql_fetch_assoc($result)) {
+        //         $objects[] = self::loadById($row['id']);
+        //     }
+        //     return ($objects);
+        // }
     }
 
 }

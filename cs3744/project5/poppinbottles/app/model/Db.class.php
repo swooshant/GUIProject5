@@ -86,6 +86,11 @@ class Db {
 		return ($result);			
 	}
 
+	public function delete($id, $db_table){
+		 $query = $this->buildDeleteQuery($id, $db_table);
+		 $this->execute($query);
+	}
+
 	//Execute operations like UPDATE or INSERT
 	public function execute($query) {		
 		$ex = mysql_query($query);
@@ -146,6 +151,14 @@ class Db {
 			return '';
 		else
 			return ($query);
+	}
+	
+	public function buildDeleteQuery($id = 0, $db_table = ''){
+		$query = sprintf("DELETE FROM `%s` WHERE id = '%s';",
+				$db_table,
+				$id
+			     );
+		return $query;
 	}
 	
 	//Get the ID of the last row inserted into the database.  Useful for getting

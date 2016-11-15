@@ -39,14 +39,6 @@ class User extends DbObject {
         $this->is_elite = $args['is_elite'];
     }
 
-    public function getUsername(){
-        return $this->username;
-    }
-
-     public function getPassword(){
-        return $this->pw;
-    }
-
     // save changes to object
     public function save() {
         $db = Db::instance();
@@ -81,6 +73,7 @@ class User extends DbObject {
             );
         $db = Db::instance();
         $result = $db->lookup($query);
+        
         if(!mysql_num_rows($result))
             return null;
         else {
@@ -95,7 +88,7 @@ class User extends DbObject {
       if($userID == null)
         return null;
 
-      $query = sprintf("SELECT username FROM `%s` WHERE id = %d ",
+      $query = sprintf("SELECT username FROM %s WHERE id = %d ",
           self::DB_TABLE,
           $userID
         );
@@ -108,5 +101,26 @@ class User extends DbObject {
           $username = $row['username'];
           return ($username);
       }
+    }
+
+     // get all usernames
+    public static function getAllUsernames() {
+
+        $query = sprintf(" SELECT * FROM %s ",
+            self::DB_TABLE
+        );
+
+        $db = Db::instance();
+        $result = $db->lookup($query);
+
+        if(!mysql_num_rows($result))
+            return null;
+        else {
+            $objects = array();
+            while($row = mysql_fetch_assoc($result)) {
+                $objects[] = self::loadById($row['id']);
+            }
+            return ($objects);
+        }
     }
 }

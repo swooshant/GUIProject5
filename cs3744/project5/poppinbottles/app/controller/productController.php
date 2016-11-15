@@ -72,9 +72,10 @@ class ProductController {
 	//retieves the data from the database
 	public function viewProduct($id) {
 		$pageName = 'Product';
+		session_start();
 		$product = Product::loadById($id);
 		$reviews = Review::getReviewsByProductId($id);
-
+		include_once SYSTEM_PATH.'/view/helpers.php';
 		include_once SYSTEM_PATH.'/view/header.tpl';
 		include_once SYSTEM_PATH.'/view/product.tpl';
 		include_once SYSTEM_PATH.'/view/footer.tpl';
@@ -83,19 +84,7 @@ class ProductController {
 	//deletes a specific item from the database
 	public function delete($id)
 	{
-		$conn = mysql_connect(DB_HOST, DB_USER, DB_PASS)
-		or die ('Error: Could not connect to MySql database');
-		mysql_select_db(DB_DATABASE);
-
-		$q = sprintf("DELETE FROM product WHERE id = %d;",
-			$id
-			);
-
-		$result = mysql_query($q);
-		if (!$result) {
-			echo "Delete Failed";
-			exit();
-		}
+		Product::deleteById($id);
 		header('Location: '.BASE_URL);
 	}
 
@@ -176,40 +165,62 @@ class ProductController {
 	}
 
 	//retrieves the id from a post and puts it into a cart session
-	//puts all the product infromation as JSON into cart session
-	public function sessionPost($id){
-		$cart = Product::loadById($id);
-
-		$product['WineTitle'] = $cart->get('WineTitle');
-		$product['ShortDesc'] = $cart->get('ShortDesc');
-		$product['LongDesc'] = $cart->get('LongDesc');
-		$product['Volumes'] = $cart->get('Volumes');
-		$product['Price'] = $cart->get('Price');
-		$product['Rating'] = $cart->get('Rating');
-		$product['Date_Created'] = $cart->get('Date_Created');
-		$product['Img_Url'] = $cart->get('Img_Url');
+	//puts all the product information as JSON into cart session
+	public function sessionPost($productID) {
 		
-		$productJSON = json_encode($product);
-		header('Content-Type: application/json');
+		if (isset($_SESSION["userID"])) {
+			$currentCart = Cart::getCartProducts($_SESSION["userID"]); // gets the array of products in cart
+			
+			//if in array, item is already in cart so increment the quantity by 1
+			if (in_array($productID, $currentCart)) {
+				Cart::incrementQuantity($_SESSION["userID"], $productID);
+			}
+			else { // cart does not have product in it
+				
+				$newCartProduct = new Cart();
 
-		//if session cart not set, create an empty one.
-		if (!isset($_SESSION['cart'])) {
-			$_SESSION['cart'] = [];
+				$newCartProduct->set('creator_id', $_SESSION["userID"]);
+				$newCartProduct->set('product_id', $productID);
+				$newCartProduct->set('product_count', 1);
+
+				$newCartProduct -> save();
+			}	
+
+			//logs the event, user added something to their cart.
+				$e = new Event(array(
+					'event_type_id' => EventType::getIdByName('add_to_cart'),
+					'user_1_id' => $_SESSION["userID"],
+					'product_1_id' => $productID
+					));
+				$e->save();	
 		}
 
-		array_push($_SESSION['cart'], $productJSON);
-
-		echo $productJSON;
-
+		
+		
 	}
 
 	/*
 	 * function addToCart
 	   returns all the products in the cart as a json  
 	 */
-	public function addToCart(){
-			header('Content-Type: application/json');
+	public function addToCart() {
+
+			$name =  $_SESSION['userID'];
+
+			$cartQuantities = Cart::getCartQuantities($name);
+			$cartProducts = Cart::getCartProducts($name);
+
+	          	$cartData = array();
+			for ($i = 0; $i < count($cartProducts); $i++) {
+				
+				$title = Product::loadById($cartProducts[$i])->get('WineTitle');
+				$price = Product::loadById($cartProducts[$i])->get('Price');
+
+				$cartData[] = '{"WineTitle":"'.$title.'","Price":"'.$price.'","Quantity":"'.$cartQuantities[$i].'"}';
+			} 
 			
+			$_SESSION['cart'] =  $cartData;
+			header('Content-Type: application/json');	
 			$productJSON = json_encode($_SESSION['cart']);
 			echo $productJSON;
 	}
@@ -219,9 +230,8 @@ class ProductController {
 	 	by returning unsetting the session 
 	 */
 	public function clearCart() {
-		unset($_SESSION['cart']);
+		Cart::deleteItems($_SESSION['userID']);
 		header('Content-Type: application/json');
-
 		$productJSON = json_encode($_SESSION['cart']);
 		echo $productJSON;
 	}
@@ -240,6 +250,14 @@ class ProductController {
 			'product_id' => $productID
 		));
 		$nr->save();
+
+		// log the post review event
+			$e = new Event(array(
+					'event_type_id' => EventType::getIdByName('post_review'),
+					'user_1_id' => $reviewerID,
+					'product_1_id' => $productID
+			));
+			$e->save();
 
 		// redirect us
 		header('Location: '.BASE_URL.'/products/view/'.$productID);

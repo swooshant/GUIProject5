@@ -16,55 +16,109 @@ $(document).ready(function(){
 		});
 		return false;
 	}
+		$('#revieWrapper .follow').click(function(){
+			var button = $(this);
+			var username = $(this).val();
+			$.post(
+				baseURL+'/user/follow/',
+				{ 'username': username },
+				function(data) {
+					if(data.success == 'success') {
+		        // Follow successful
+		        // Already followed, so remove the button
+		        $(button).remove();
+		      } else if (data.error != '') {
+		        alert(data.error); // show error as popup
+		      }
+		    },
+		    'json'
+		    );
+		});
+		
+		// event handler for Unfollow buttons
+		$('#bodyWrapper .unfollow').click(function(){
+
+			var button = $(this);
+			var username = $(this).val();
+			// console.log(username);
+			var liClass = '#bodyWrapper .unfollow' + username;
+			var li = $(liClass);
+			// console.log(li.innerHTML);
+			$.post(
+				baseURL+'/user/unfollow/',
+				{ 'username': username },
+				function(data) {
+					if(data.success == 'success') {
+		        // Follow successful
+		        // Already followed, so remove the button
+		        $(li).remove();
+		        $(button).remove();
+		        location.reload();
+		      } else if (data.error != '') {
+		        alert(data.error); // show error as popup
+		      }
+		    },
+		    'json'
+		    );
+		});
+
+		$('#userEditWrapper .changeUser').on('change', function(){
+		        var name = $(this).attr('id');
+		        var name1 = '#userEditWrapper #';
+		        name =  name1.concat(name);
+		        $(name).submit();
+		});
+
+
 
 		//event trigger for the login bar being empty
 		//changes everything to red until both fields are filled
-	$('#login .logForm').click(function(){
-		var value1 = $('#login .user').val();
-		var value2 = $('#login .pass').val();
-		if (value1 == '' || value2 == '') {
-			$('#login .inputForm').css('background-color', 'red');
-			$(this).css('color', 'red');
-			
-			if ( !$('#warning').length ) {
-				$("#login").prepend("<h1 id='warning'>Empty Field(s)!</h1>");
-				$("#warning").css("color", "red");
-				$("#warning").css("margin-right", "5px");
-				$("#warning").css("font-size", "16pt");
-			}
-			return false;
-		}
-		else{
-			$('#login .inputForm').css('background-color', 'white');
-			$(this).css('color', 'white');	
-			if ( $('#warning').length ) {
-				$("#warning").remove();
-			}
-		}
-	});
+		$('#login .logForm').click(function(){
+			var value1 = $('#login .user').val();
+			var value2 = $('#login .pass').val();
+			if (value1 == '' || value2 == '') {
+				$('#login .inputForm').css('background-color', 'red');
+				$(this).css('color', 'red');
 
-	$('#newsletter .submit').click(function(){
-		var value1 = $('#newsletter .name').val();
-		var value2 = $('#newsletter .email').val();
-		if (value1 == '' || value2 == '') {
-			$('#newsletter .inputForm').css('background-color', 'red');
-			$(this).css('color', 'red');	
-			return false;
-		}
-		else{
-			$('#newsletter .inputForm').css('background-color', 'white');
-			$(this).css('color', 'white');	
-		}
-	});
+				if ( !$('#warning').length ) {
+					$("#login").prepend("<h1 id='warning'>Empty Field(s)!</h1>");
+					$("#warning").css("color", "red");
+					$("#warning").css("margin-right", "5px");
+					$("#warning").css("font-size", "16pt");
+				}
+				return false;
+			}
+			else{
+				$('#login .inputForm').css('background-color', 'white');
+				$(this).css('color', 'white');	
+				if ( $('#warning').length ) {
+					$("#warning").remove();
+				}
+			}
+		});
+
+		$('#newsletter .submit').click(function(){
+			var value1 = $('#newsletter .name').val();
+			var value2 = $('#newsletter .email').val();
+			if (value1 == '' || value2 == '') {
+				$('#newsletter .inputForm').css('background-color', 'red');
+				$(this).css('color', 'red');	
+				return false;
+			}
+			else{
+				$('#newsletter .inputForm').css('background-color', 'white');
+				$(this).css('color', 'white');	
+			}
+		});
 
 
 	//button event triggers for switching vineyard pictures.
 	$('#vin1button').click(function(){
 		var src=$('#vineImag').attr("src");
 		if(src == "img/vin1.jpg" ) {
-   			return;
+			return;
 		}else {
-   			changeImage('vin1.jpg');
+			changeImage('vin1.jpg');
 		}
 		return;
 	});
@@ -72,9 +126,9 @@ $(document).ready(function(){
 	$('#vin2button').click(function(){
 		var src=$('#vineImag').attr("src");
 		if(src == "img/vin2.jpg" ) {
-   			return;
+			return;
 		}else {
-   			changeImage('vin2.jpg');
+			changeImage('vin2.jpg');
 		}
 		return;
 	});
@@ -82,9 +136,9 @@ $(document).ready(function(){
 	$('#vin3button').click(function(){
 		var src=$('#vineImag').attr("src");
 		if(src == "img/vin3.jpg" ) {
-   			return;
+			return;
 		}else {
-   			changeImage('vin3.jpg');
+			changeImage('vin3.jpg');
 		}
 		return;
 	});
@@ -119,5 +173,4 @@ $(document).ready(function(){
 			return true;
 		}
 	});
-
 });
