@@ -1,4 +1,30 @@
 <h1><a class="back" href="<?= BASE_URL ?>/browse/"> <<< back </a></h1>
+<script type="text/javascript">
+	/*
+			* postToSession(id) function will post the specific id of the wine item that is clicked on to the specified url 
+			*/
+			function postToSession(id) {
+				var $cart = $('#cartItems'); // gets the cartItems div
+
+				var cartData = {
+					'id': id
+				};
+
+				$.ajax(
+				{				
+					type: "POST",
+					url: "<?= BASE_URL ?>"+ "/products/updatePostCart/",
+					data: cartData,
+					success: function(result) {
+						//updateTheCart(); //update the layout of the cart asynchronously
+					},
+					error: function(xhr, status, error) {
+						//var err = eval("(" + xhr.responseText + ")");
+						alert('error when posting to session.');
+					}
+				});
+			}
+</script>
 <div id="bodyWrapper">
 	<div id="prodcontent-left">
 			<form  action="<?= BASE_URL ?>/products/processEditDel/<?= $product->get('id') ?>" method="POST" >
@@ -41,7 +67,8 @@
 				</select>
 			</div>
 
-			<button class="submit">Add to Cart</button>
+			<!-- <button class="submit">Add to Cart</button> -->
+			<button class="submit" type="button" id = "updateCart" value="cartPressed" onclick="postToSession(<?=$product->get('id')?>)"> Add to Cart</button>
 			
 			<?php if(isset($_SESSION['userID'])): ?>
 				<h3> <a href="#addReview"> Add a Review! </a></h3>

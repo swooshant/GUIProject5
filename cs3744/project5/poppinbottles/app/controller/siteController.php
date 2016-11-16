@@ -130,7 +130,7 @@ class SiteController {
 			header('Location: '.BASE_URL);
 			exit();
 		}
-		else if ($user->get('pw') != $p)
+		else if (!password_verify($p, $user->get('pw')))
 		{
 			$_SESSION['msg'] = 'Incorrect username or password.';
 			header('Location: '.BASE_URL);
@@ -261,7 +261,7 @@ class SiteController {
 		}
 
 		$username = $_POST['accountusername'];
-		$password = $_POST['accountpassword'];
+		$password = password_hash($_POST['accountpassword'], PASSWORD_DEFAULT);
 
 		$userCheck = User::loadByUsername($_POST['accountusername']);
 
@@ -283,7 +283,7 @@ class SiteController {
 			$user->save();
 
 
-			$this->processLogin($username, $password);
+			$this->processLogin($username, $_POST['accountpassword']);
 			header('Location: '.BASE_URL);
 			exit();
 		}	
@@ -339,7 +339,7 @@ class SiteController {
 		}
 		else
 		{
-			$user->set('pw', $firstPassword);
+			$user->set('pw', password_hash($firstPassword, PASSWORD_DEFAULT));
 			$_SESSION['profile'] = "Changes saved.";
 		}
 		$user->save();
@@ -433,13 +433,9 @@ class SiteController {
 	public function updateElite(){
 		$name = $_POST['radioName'];
 		$pieces = explode(" ", $name);
-
 		echo $pieces[0];
 		echo $pieces[1];
-
 		$updateUser = User::loadByUsername($pieces[0]);
-
-
 		if ($pieces[1] == "elite") {
 	    	$updateUser->set('is_elite', 1);
 		}

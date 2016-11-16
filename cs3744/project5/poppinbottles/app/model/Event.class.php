@@ -98,8 +98,9 @@ class Event extends DbObject {
       $query = '';
       if ($followed == null)
       {
-        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id = %d ORDER BY date_created DESC  ",
+        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id = %d OR user_2_id = %d ORDER BY date_created DESC LIMIT 10 ",
           self::DB_TABLE,
+          $userID,
           $userID
         );
 
@@ -107,7 +108,7 @@ class Event extends DbObject {
       else {
         //$map = array_map('intval', $followed);
         $matches = implode(',', $followed);
-        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id IN ($matches) OR user_1_id = %d ORDER BY date_created DESC  ",
+        $query = sprintf("SELECT * FROM `%s` WHERE user_1_id IN ($matches) OR user_1_id = %d ORDER BY date_created DESC LIMIT 10 ",
           self::DB_TABLE,
           $userID
         );
@@ -135,7 +136,7 @@ class Event extends DbObject {
 
       $db = Db::instance();
 
-      $query = sprintf("SELECT * FROM `%s` WHERE user_1_id = %d OR user_2_id = %d ORDER BY date_created DESC ",
+      $query = sprintf("SELECT * FROM `%s` WHERE user_1_id = %d OR user_2_id = %d ORDER BY date_created DESC LIMIT 10 ",
         self::DB_TABLE,
         $userID,
         $userID
